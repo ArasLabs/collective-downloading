@@ -87,7 +87,7 @@
 	<script type="text/javascript">
 
 		// ===== variables section ============
-		var setupArguments = window.dialogArguments || parent.dialogArguments || top.dialogArguments,
+		var setupArguments = window.frameElement.dialogArguments || parent.frameElement.dialogArguments || top.frameElement.dialogArguments,
 			aras = setupArguments.aras,
 			pageControls = {},
 			workingDirectory = "",
@@ -163,7 +163,7 @@
 					nds[1].text = aras.getItemProperty(columnItem, "itm_label");
 					nds[2].text = aras.getItemProperty(columnItem, "fname");
 					nds[3].text = aras.getItemProperty(columnItem, "ftype");
-					nds[4].text = aras.getItemProperty(columnItem, "fsize");
+					nds[4].text = convertBytesToSize(aras.getItemProperty(columnItem, "fsize"));
 					
 					gridDom.selectSingleNode("/table").appendChild(tmpDom.selectSingleNode("/tr"));
 				}
@@ -209,7 +209,7 @@
 		}
 
 		function doDoubleClick(selectId) {
-			var myaras = new Aras(dialogArguments.aras);
+			var myaras = new Aras(aras);
 		    myaras.uiShowItem("File", selectId);
 		}
 
@@ -225,6 +225,7 @@
 		}
 
 		function changeWorkingDirectory () {
+		debugger;
 			var newDirectory = aras.vault.selectFolder();
 
 			if (newDirectory) {
@@ -256,36 +257,37 @@
 
 		function downloadFile (fileNode, localDirectory, useDownloadPhysicalFileAs, alreadyComfirmedExistance) {
 			if (fileNode) {
+				var win  = aras.getMostTopWindowWithAras(window);
+				win = win.main || win;
 				localDirectory = localDirectory || aras.vault.selectFolder();
 
 				if (localDirectory) {
-					var downloadResult,
-						action = fileNode.getAttribute("action");
+					var action = fileNode.getAttribute("action");
 
+					var callback = function (downloadResult) {
+						if (downloadResult) {
+							aras.AlertSuccess(aras.getResource("", "file_management.file_succesfully_downloaded", fileName, localDirectory), win);
+						}
+					};
 					if (useDownloadPhysicalFileAs) {
-
 						var fileNameOfFileNode;
 
 						if (action === "copyAsNew") {
 							fileNameOfFileNode = aras.getItemProperty(fileNode, "filename");
 							aras.setItemProperty(fileNode, "filename", fileNode.getAttribute("source_filename"));
 						}
-
-						downloadResult = aras.downloadPhysicalFileAs(fileNode, localDirectory, aras.getMostTopWindowWithAras(window), alreadyComfirmedExistance);
-						//downloadResult = aras.downloadPhysicalFileAs(fileNode, localDirectory, window.top, action !== "copyAsNew" || alreadyComfirmedExistance);
-						//downloadResult = aras.downloadPhysicalFileAs(fileNode, localDirectory, window.opener.top, action !== "copyAsNew" || alreadyComfirmedExistance);
+						var callback = function (downloadResult) {
+							if (downloadResult) {
+								aras.AlertSuccess(aras.getResource("", "file_management.file_succesfully_downloaded", fileName, localDirectory), win);
+							}
+						};
+						aras.downloadPhysicalFileAs(fileNode, localDirectory, win, action !== "copyAsNew" || alreadyComfirmedExistance, callback);
 						if (action === "copyAsNew") {
 							aras.setItemProperty(fileNode, "filename", fileNameOfFileNode);
 						}
+						return;
 					} else {
-
-						downloadResult = aras.downloadPhysicalFile(fileNode, localDirectory, aras.getMostTopWindowWithAras(window));
-						//downloadResult = aras.downloadPhysicalFile(fileNode, localDirectory, window.opener.top);
-					}
-
-					if (downloadResult) {
-						aras.AlertSuccess(aras.getResource("", "file_management.file_succesfully_downloaded", fileName, localDirectory), aras.getMostTopWindowWithAras(window));
-						//aras.AlertSuccess(aras.getResource("", "file_management.file_succesfully_downloaded", fileName, localDirectory), window.opener.top);
+						aras.downloadPhysicalFile(fileNode, localDirectory, win, callback);
 					}
 				}
 				else {
@@ -347,10 +349,21 @@
 					save_workingDirectory = workingDirectory;
 					downloadFile(newFile, save_workingDirectory, false, false);
 				}
-				window.close();
+				window.frameElement.dialogArguments.dialog.close();
 			}
 		}		
 		
+		function convertBytesToSize (byteLength) {
+			if (byteLength != 0) {
+				var sizeUnits = ["Bytes", "KB", "MB", "GB", "TB"],
+					i = parseInt(Math.floor(Math.log(byteLength) / Math.log(1024)));
+
+				return (byteLength / Math.pow(1024, i)).toFixed(1) + " " + sizeUnits[i];
+			}
+			else {
+				return "0 Bytes";
+			}
+		}
 	</script>
 
 

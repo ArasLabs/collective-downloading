@@ -10,12 +10,14 @@ This project and the following release notes have been migrated from the old Ara
 
 Release | Notes
 --------|--------
+[v11SP6](https://github.com/ArasLabs/collective-downloading/releases/tag/v11SP6) | Instructions (in Japanese) are described in the ReadMe.pdf.
 [v11SP2](https://github.com/ArasLabs/collective-downloading/releases/tag/v11SP2) | Instructions are described in the ReadMe.pdf.
 
 #### Supported Aras Versions
 
 Project | Aras
 --------|------
+[v11SP6](https://github.com/ArasLabs/collective-downloading/releases/tag/v11SP6) | 11.0 SP6
 [v11SP2](https://github.com/ArasLabs/collective-downloading/releases/tag/v11SP2) | 11.0 SP2
 
 ## Installation

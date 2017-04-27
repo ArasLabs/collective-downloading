@@ -14,7 +14,12 @@ var options = {
 	dialogHeight: 500
 };
 
-top.aras.modalDialogHelper.show('DefaultModal', window, params, options, html_url);]]></method_code>
+// メインWindowの判定。(もっといいのがあれば教えてほしい)
+var aWin = ('main' in top)?main:window;
+
+// モーダルダイアログの呼び出し第一引数を'DefaultModal'にすると今までと同じ呼び出しだがChromeでは使用不可能
+top.aras.modalDialogHelper.show('', aWin, params, options, html_url);
+]]></method_code>
   <method_type>JavaScript</method_type>
   <name>z_manageAllDlFile</name>
  </Item>

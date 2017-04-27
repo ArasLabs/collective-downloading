@@ -2,7 +2,6 @@
  <Item type="Action" id="D0A14948968B4B5CB341C5A0211A1E9A" action="add">
   <item_query>&lt;Item type="{@type}" id="{@id}" levels= "1" action="get" /&gt;</item_query>
   <label xml:lang="en">Download All File</label>
-  <label xml:lang="ja">対象アイテムタイプ内のファイルを一括ダウンロード</label>
   <location>client</location>
   <method keyed_name="z_manageAllDlFile" type="Method">
    <Item type="Method" action="get" select="id">
