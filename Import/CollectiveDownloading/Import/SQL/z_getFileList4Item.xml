@@ -1,0 +1,111 @@
+﻿<AML>
+ <Item type="SQL" id="1928996FC86B4391A82CAA3533164420" action="add">
+  <execution_count>36</execution_count>
+  <execution_flag>immediate</execution_flag>
+  <old_name>z_getFileList4Item</old_name>
+  <sqlserver_body><![CDATA[create procedure z_getFileList4Item(@id char(32), @itmtype nvarchar(32), @langsuffix nvarchar(4))
+as
+begin
+    /* Definition */
+    DECLARE @rid CHAR(32)
+    DECLARE @name NVARCHAR(256)
+    DECLARE @label NVARCHAR(64)
+    
+    /* Temp  */
+    CREATE TABLE #temp_relationlist
+     (
+      ID CHAR(32) PRIMARY KEY, 
+      fname  NVARCHAR(256),
+      itm_label  NVARCHAR(256),
+      fsize INT,
+      ftype NVARCHAR(256)
+     )
+    
+    DECLARE @SQLR NVARCHAR(2000)
+    DECLARE @PRAMR NVARCHAR(2000)
+    
+    /* get Relation infomation */
+    SET @SQLR = N'DECLARE relationList CURSOR FOR select ID as RID ,replace(name,'' '',''_'') as name, LABEL' + @langsuffix + N' as label from [innovator].RELATIONSHIPTYPE where SOURCE_ID ='
+    + N'(select id from [innovator].ITEMTYPE where name = @i_itmtype) and RELATED_ID = ''8052A558B9084D41B9F11805E464F443''' /* FILE ITEM ID */
+    
+    SET @PRAMR = N'@i_itmtype nvarchar(32)'
+
+    EXEC sp_executesql 
+    @SQLR
+    ,@PRAMR
+    ,@i_itmtype = @itmtype
+    
+    /*
+	DECLARE relationList CURSOR FOR
+	select ID as RID ,replace(name,' ','_') as name,LABEL,LABEL_ja from [innovator].RELATIONSHIPTYPE where SOURCE_ID =
+	(select id from [innovator].ITEMTYPE where name = @itmtype)
+	and RELATED_ID = '8052A558B9084D41B9F11805E464F443' /* FILE ITEM ID */
+	*/
+	
+	SET NOCOUNT ON
+	
+	/* main process */
+	OPEN relationList 
+	
+	FETCH NEXT FROM relationList
+     INTO @rid, @name,@label
+	
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+       DECLARE @fid CHAR(32)
+       DECLARE @fname VARCHAR(256)
+       DECLARE @ftype NVARCHAR(256)
+       DECLARE @fsize INT
+              
+       DECLARE @SQL NVARCHAR(2000)
+       DECLARE @PRAM NVARCHAR(2000)
+       
+       /* Get File Info */
+       SET @SQL = N'DECLARE fileList CURSOR FOR select f.id as fid, f.FILENAME as fname, ft.NAME as ftype, f.file_size as fsize from innovator.' + @name
+       + ' df inner join innovator.[FILE] f on df.RELATED_ID = f.id left join innovator.[FILETYPE] ft on f.FILE_TYPE = ft.ID where SOURCE_ID = @i_id'
+       
+       
+       SET @PRAM = N'@i_id CHAR(32)'
+       
+       EXEC sp_executesql 
+        @SQL
+        ,@PRAM
+        ,@i_id = @id
+      
+		OPEN fileList 
+		
+		FETCH NEXT FROM fileList
+		 INTO @fid, @fname, @ftype, @fsize
+		
+		WHILE @@FETCH_STATUS = 0
+		BEGIN
+      
+		  /* insert Tmp */
+		  INSERT INTO #temp_relationlist ( ID, fname, itm_label, fsize, ftype)
+		  VALUES ( @fid, @fname, @label, @fsize, @ftype)
+
+	    FETCH NEXT FROM fileList
+	    INTO @fid, @fname, @ftype, @fsize
+	    END
+		
+		/* close */
+		CLOSE fileList
+		DEALLOCATE fileList
+
+    FETCH NEXT FROM relationList
+    INTO @rid, @name,@label
+
+    END
+    SELECT ID, fname, itm_label, fsize, ftype FROM #temp_relationlist order by itm_label,fname
+    
+    /* close */
+    CLOSE relationList
+    DEALLOCATE relationList
+    DROP TABLE #temp_relationlist
+END]]></sqlserver_body>
+  <stale>0</stale>
+  <transform_first>0</transform_first>
+  <type>procedure</type>
+  <name>z_getFileList4Item</name>
+ </Item>
+</AML>

@@ -1,0 +1,21 @@
+﻿<AML>
+ <Item type="Method" id="A789AE16F229419B96E4B99B82901C80" action="add">
+  <execution_allowed_to keyed_name="World" type="Identity">A73B655731924CD0B027E4F4D5FCC0A9</execution_allowed_to>
+  <method_code><![CDATA[// モーダレス実装
+var html_url = "../Solutions/Ext/DownloadAll/scripts/manageAllDlFileDialog.html";
+
+var params = {};
+params.target_id = this.getID();
+params.aras = window.top.aras;
+params.type = this.getType();
+
+var options = {
+	dialogWidth: 500,
+	dialogHeight: 500
+};
+
+top.aras.modalDialogHelper.show('DefaultModal', window, params, options, html_url);]]></method_code>
+  <method_type>JavaScript</method_type>
+  <name>z_manageAllDlFile</name>
+ </Item>
+</AML>

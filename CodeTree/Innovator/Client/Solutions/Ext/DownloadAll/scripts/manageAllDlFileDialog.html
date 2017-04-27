@@ -1,0 +1,393 @@
+﻿<!DOCTYPE html>
+<!-- (c) Copyright by Aras Corporation, 2004-2014. -->
+<html>
+<head>
+	<style type="text/css">
+
+		@import "../../../../styles/default.css";
+		@import "../../../../public/styles/controls.css";
+
+		html, body{
+			overflow: hidden;
+			width: 100%;
+			height: 100%;
+			margin: 0px;
+		}
+
+		.allcontainer {
+			padding: 20px;
+		}
+
+		#filePropertyContainer {
+			position: relative;
+			max-width: 500px;
+		}
+
+		button::-moz-focus-inner {
+			border: 0px;
+		}
+		button:focus {
+			outline: 1px dashed #729EDB;
+		}
+
+		.fileProperty {
+			overflow:hidden;
+			max-width: 4000px;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		#fileErrorMessage {
+			max-width: 250px;
+			color: #A0A0A0;
+			font-size: 14px;
+			font-style: italic;
+		}
+
+		#errorOverlay {
+			position: absolute;
+			z-index: 100;
+			top: 0px;
+			bottom: 0px;
+			left: 0px;
+			right: 0px;
+			padding: 10px;
+			background-color: #FFFFFF;
+			color: #b83b1d;
+			font-size: 16px;
+		}
+
+		#changeDirectory, #fileName {
+			background-color: transparent;
+			border: none;
+		}
+
+		.buttonIcon {
+			display: inline-block;
+			max-width: 30px;
+			width: 30px;
+			max-height: 30px;
+			height: 30px;
+			vertical-align: middle;
+		}
+
+	</style>
+	<script>
+		var args = typeof dialogArguments === "undefined" ? parent.dialogArguments : dialogArguments,
+			aras = (args && args.aras) ? args.aras : parent.aras;
+	</script>
+	<script type="text/javascript" src="../../../../javascript/dialog.js"></script>
+	<script type="text/javascript" src="../../../../javascript/include.aspx?classes=ScriptSet1"></script>
+	<script type="text/javascript" src="../../../../javascript/include.aspx?classes=ScriptSet2"></script>
+	<script type="text/javascript" src="../../../../javascript/include.aspx?classes=ScriptSet6"></script>
+	<script type="text/javascript" src="../../../../javascript/include.aspx?classes=XmlDocument"></script>
+	<script type="text/javascript" src="../../../../javascript/include.aspx?classes=/dojo.js"
+		data-dojo-config="isDebug: false, parseOnLoad: false, baseUrl:'../../../../javascript/dojo'"></script>
+	<script type="text/javascript" src="../../../../javascript/PopulateDocByLabels.js"></script>
+	<script type="text/javascript">
+
+		// ===== variables section ============
+		var setupArguments = window.dialogArguments || parent.dialogArguments || top.dialogArguments,
+			aras = setupArguments.aras,
+			pageControls = {},
+			workingDirectory = "",
+			fileName = "";
+		// ===== end of variables section =====
+
+		//==================== Grid Layout & Style ===================================
+		var grid;
+		var xmlParentBase = aras.getBaseURL() + "/Solutions/Ext/DownloadAll/";
+		var array = new Array();
+
+		oncontextmenu = function () {
+			return false;
+		};
+
+		onload = function () {
+			var isInitialized = false;
+			
+			PopulateDocByLabels();
+			initializeControls();
+			
+			clientControlsFactory.createControl("Aras.Client.Controls.Public.Toolbar", {id: "toolbar", connectId: "toolbarContainer"}, function(control) {
+				toolbarApplet = toolbar = control;
+				clientControlsFactory.on(toolbar, {
+					"onClick": onToolbarButtonClick
+				});
+				loadToolbar();
+			});
+
+			clientControlsFactory.createControl("Aras.Client.Controls.Public.GridContainer",  {connectId: "gridTD"}, function(control) {
+				grid = control;
+				clientControlsFactory.on(grid, {
+					"gridDoubleClick": onGridDoubleClick
+				});
+				initGrid();
+				onSelectAll();
+			});
+		}
+
+
+		function initGrid() {
+		
+			var gridDom = aras.createXMLDocument();
+			gridDom.load(aras.getI18NXMLResource("DownloadAll.xml", xmlParentBase));
+			var tmpDom = aras.createXMLDocument();
+			if (gridDom.parseError.errorCode !== 0) {
+				var loadError = gridDom.parseError;
+				aras.AlertError(aras.getResource("Ext/DownloadAll", "common.unknown_user"));
+				return;
+			}
+
+			var methodAML =
+				"<target_id>" + setupArguments.target_id + "</target_id>"
+				+ "<target_itemtype>" + setupArguments.type + "</target_itemtype>"
+			var res = aras.applyMethod("z_get_Filelist_DownloadAll", methodAML);
+
+			if(res)
+			{
+				var xDoc = aras.createXMLDocument();
+				xDoc.loadXML(res);
+				var gridItems = xDoc.selectNodes("//Item");
+				for (var i = 0; i < gridItems.length; i++) {
+					var columnItem = gridItems[i];
+					var fid =  aras.getItemProperty(columnItem, "id");
+					array[i] = fid;
+					tmpDom.loadXML("<tr><td/><td/><td/><td/><td/></tr>");
+					d = tmpDom.documentElement;
+					d.setAttribute("id", fid);
+					d.setAttribute("action", fid);
+					
+					nds = d.selectNodes("td");
+					nds[0].text = i+1;
+					nds[1].text = aras.getItemProperty(columnItem, "itm_label");
+					nds[2].text = aras.getItemProperty(columnItem, "fname");
+					nds[3].text = aras.getItemProperty(columnItem, "ftype");
+					nds[4].text = aras.getItemProperty(columnItem, "fsize");
+					
+					gridDom.selectSingleNode("/table").appendChild(tmpDom.selectSingleNode("/tr"));
+				}
+				
+			}
+			grid.InitXML(gridDom.xml);
+		
+		}
+
+		function loadToolbar() {
+			toolbarReady = true;
+			toolbar.loadXml(top.aras.getI18NXMLResource("DownloadAllToolbar.xml", xmlParentBase));
+			initToolbar();
+		}
+
+		function initToolbar() {
+			document.toolbar = toolbar;
+			toolbar.loadXml(top.aras.getI18NXMLResource("DownloadAllToolbar.xml", xmlParentBase));
+			toolbar.show();
+		}
+
+		function onToolbarButtonClick(item) {
+			grid.turnEditOff();
+			if (item.getId() == "refresh") { 
+				initGrid(); 
+			}
+			else if (item.getId() == "open_row_item") { 
+				var selectId = grid.getSelectedId();
+				if(selectId == ""){return;}
+				doDoubleClick(selectId); 
+				
+			}
+			else if (item.getId() == "select_all") { 
+				onSelectAll(); 
+			}
+		}
+
+		function onSelectAll() {
+		    for (var i = 0; i < grid.getRowCount(); i++)
+		    {
+		        grid.setSelectedRow(grid.getRowId(i), true);
+		    }
+		}
+
+		function doDoubleClick(selectId) {
+			var myaras = new Aras(dialogArguments.aras);
+		    myaras.uiShowItem("File", selectId);
+		}
+
+		function initializeControls () {
+			
+			// bottom container section
+			workingDirectory = aras.getWorkingDir();
+			pageControls.workingDirectoryPath = document.getElementById("workingDirectoryPath");
+			pageControls.workingDirectoryPath.innerHTML = "Save Directory: " + workingDirectory;
+			pageControls.workingDirectoryPath.title = workingDirectory;
+
+			pageControls.errorOverlay = document.getElementById("errorOverlay");
+		}
+
+		function changeWorkingDirectory () {
+			var newDirectory = aras.vault.selectFolder();
+
+			if (newDirectory) {
+				if (aras.vault.setWorkingDir(newDirectory)) {
+					var userNode = this.aras.getLoggedUserItem();
+						userId = aras.getCurrentUserID();
+
+					if (userNode && userId == aras.getUserID()) {
+						workingDirectory = newDirectory;
+						aras.setItemProperty(userNode, "working_directory", newDirectory);
+						aras.setUserWorkingDirectory(userId, newDirectory);
+
+						pageControls.workingDirectoryPath.innerHTML = "Save Directory: " + newDirectory;
+						pageControls.workingDirectoryPath.title = workingDirectory;
+
+						return true;
+					}
+					else {
+						aras.AlertError(aras.getResource("", "common.unknown_user"));
+					}
+				}
+				else {
+					AlertError(aras.getResource("", "item_methods_ex.specified_path_invalid_use_working_directory"), "", "", win);
+				}
+			}
+			return false;
+		}
+
+
+		function downloadFile (fileNode, localDirectory, useDownloadPhysicalFileAs, alreadyComfirmedExistance) {
+			if (fileNode) {
+				localDirectory = localDirectory || aras.vault.selectFolder();
+
+				if (localDirectory) {
+					var downloadResult,
+						action = fileNode.getAttribute("action");
+
+					if (useDownloadPhysicalFileAs) {
+
+						var fileNameOfFileNode;
+
+						if (action === "copyAsNew") {
+							fileNameOfFileNode = aras.getItemProperty(fileNode, "filename");
+							aras.setItemProperty(fileNode, "filename", fileNode.getAttribute("source_filename"));
+						}
+
+						downloadResult = aras.downloadPhysicalFileAs(fileNode, localDirectory, aras.getMostTopWindowWithAras(window), alreadyComfirmedExistance);
+						//downloadResult = aras.downloadPhysicalFileAs(fileNode, localDirectory, window.top, action !== "copyAsNew" || alreadyComfirmedExistance);
+						//downloadResult = aras.downloadPhysicalFileAs(fileNode, localDirectory, window.opener.top, action !== "copyAsNew" || alreadyComfirmedExistance);
+						if (action === "copyAsNew") {
+							aras.setItemProperty(fileNode, "filename", fileNameOfFileNode);
+						}
+					} else {
+
+						downloadResult = aras.downloadPhysicalFile(fileNode, localDirectory, aras.getMostTopWindowWithAras(window));
+						//downloadResult = aras.downloadPhysicalFile(fileNode, localDirectory, window.opener.top);
+					}
+
+					if (downloadResult) {
+						aras.AlertSuccess(aras.getResource("", "file_management.file_succesfully_downloaded", fileName, localDirectory), aras.getMostTopWindowWithAras(window));
+						//aras.AlertSuccess(aras.getResource("", "file_management.file_succesfully_downloaded", fileName, localDirectory), window.opener.top);
+					}
+				}
+				else {
+					aras.AlertError("Destination directory wasn't specified."); //!!! must be resource string
+				}
+			}
+		}
+
+		function returnFocusOnTab(eventArg) {
+			if (eventArg.keyCode == 9) {
+				pageControls.nameProperty.focus();
+
+				eventArg.preventDefault();
+				eventArg.stopPropagation();
+			}
+		}
+
+		function createXml(elem, value, isEscape)
+		{
+		    var result;
+		    if(isEscape)
+		    {
+		        result = "<" + elem + ">" + escape4xml(value) + "</" + elem + ">";
+		    }
+		    else
+		    {
+		        result = "<" + elem + ">" + value + "</" + elem + ">";
+		    }
+		    return result;
+		}
+
+		function escape4xml(str)
+		{
+		    str = str.replace(/&/g, "&amp;");
+		    str = str.replace(/"/g, "&quot;");
+		    str = str.replace(/'/g, "&#039;");
+		    str = str.replace(/</g, "&lt;");
+		    str = str.replace(/>/g, "&gt;");
+		    return str;
+		}
+
+		function onGridDoubleClick(rowId) {
+		    doDoubleClick(rowId);
+		}
+
+		function downloadAll() {
+			if(grid.getSelectedId() == ""){alert(aras.getResource("Ext/DownloadAll", "alert.selectFile"));return;}
+			var gridArray = grid.getSelectedItemIds(":").split(":");
+			
+			if(aras.confirm(aras.getResource("Ext/DownloadAll", "alert.startDownload"))){
+				//AllFile
+				//for(var i=0; i<array.length; i++){
+				//Selected File
+				for(var i=0; i<gridArray.length; i++){
+
+					//var newFile = aras.getItemById("File", array[i], 0);
+					var newFile = aras.getItemById("File", gridArray[i], 0);
+					//save_workingDirectory = workingDirectory + "\\" +aras.getItemProperty(newFile, "filename");
+					save_workingDirectory = workingDirectory;
+					downloadFile(newFile, save_workingDirectory, false, false);
+				}
+				window.close();
+			}
+		}		
+		
+	</script>
+
+
+</head>
+<body class="claro">
+	<table class="claro" style="width: 80%; height: 100%; position: absolute; top: 10px; left: 0px;" cellspacing="0" cellpadding="0">
+		<tr style="vertical-align: top;">
+			<td id="toolbarContainer">
+			</td>
+		</tr>
+	</table>
+	
+	<table class="claro" style="width: 100%; height: 78%; position: absolute; top: 70px; left: 0px;" cellspacing="0" cellpadding="0">
+		<tr style="vertical-align: top;">
+			<td id="gridTD" style="width: 100%; height: 100%;">
+			</td>
+		</tr>
+	</table>
+
+	<div id="buttonsContainer">
+		<button id="downloadAll" style="position:absolute; cursor:pointer; overflow:hidden; right:10px; top:10px; width: 70px; line-height:20px;" onclick="downloadAll();">
+			<img src="../../../../images/DownloadToSelected.svg" style="display:inline-block; height:24px; width:24px; vertical-align:middle;">
+			<span class="sys_item_link">Download</span>
+		</button>
+	</div>	
+	
+	<div id="bottomContainer" style="position:absolute; left:0px; right:0px; bottom:0px; height:40px; border-top: 1px solid #A0A0A0;">
+		<div id="workingDirectoryPath" class="fileProperty" style="margin:12px 0px 0px 15px;"></div>
+		<button id="changeDirectory" style="position:absolute; cursor:pointer; overflow:hidden; right:10px; top:10px; width: 70px; line-height:20px;" onclick="changeWorkingDirectory()" onkeydown="returnFocusOnTab(event)">
+			<img src="../../../../images/Change.svg" style="display:inline-block; height:16px; width:16px; vertical-align:middle;">
+			<span class="sys_item_link">Change</span>
+		</button>
+	</div>
+	<div id="errorOverlay" style="display:none;" aras_ui_resource_key="file_management.dialog_initialization_failed"></div>
+
+
+
+
+</body>
+</html>

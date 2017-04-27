@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ui_resources>
+ 
+  <!-- +++++Client\Solutions\Ext\DownloadAll\scripts\manageAllDlFileDialog +++++ -->
+  <resource key="err.loadxml" value="フォームテンプレートの読み込みに失敗しました。"/>
+  <resource key="alert.selectFile" value="ダウンロードするファイルを選択してください。"/>
+  <resource key="alert.startDownload" value="ファイルのダウンロードを開始します。"/>
+  
+</ui_resources>

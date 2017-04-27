@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<table delim="|" font="Arial-8" link_func="onLink" 
+draw_grid="true" multiselect="true" column_draggable="true" enableHtml="false" 
+enterAsTab="false" bgInvert="false" onDoubleClick="doDoubleClick" onRowSelect="onRowSelect" editable="false" onXmlLoaded = "onXmlLoaded">
+	<thead>
+		<th align="c">No</th>
+		<th align="c">アイテム名</th>
+		<th align="c">ファイル名</th>
+		<th align="c">ファイルタイプ</th>
+		<th align="c">ファイルサイズ</th>
+	</thead>
+	<columns>
+		<column width="45" edit="" align="c" order="0"/>
+		<column width="75" edit="" align="l" order="1"/>
+		<column width="175" edit="" align="l" order="2"/>
+		<column width="85" edit="" align="r" order="3"/>
+		<column width="85" edit="" align="r" order="4"/>
+	</columns>
+	<menu/>
+</table>

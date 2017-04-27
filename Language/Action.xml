@@ -1,0 +1,5 @@
+<export>
+  <Item keyed_name="z_manageAllDlFile" config_id="D0A14948968B4B5CB341C5A0211A1E9A">
+    <property __name="label" ja="対象アイテムタイプ内のファイルを一括ダウンロード" />
+  </Item>
+</export>

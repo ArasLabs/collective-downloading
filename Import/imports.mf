@@ -1,0 +1,3 @@
+<imports>
+  <package name="jp.co.neo.CollectiveDownloading" path="CollectiveDownloading\Import" />
+</imports>

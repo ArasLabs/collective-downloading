@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<toolbarapplet on_load="onToolbarLoad" on_click="onClickItem" buttonstyle="windows" buttonsize="26,25">
+  <toolbar id="swtoolbar">
+    <button text="リフレッシュ" id="refresh" image="../images/Refresh.svg" tooltip="リフレッシュ" statusmsg="リフレッシュ">リフレッシュ</button>
+    <button text="アイテムを開く" id="open_row_item" image="../images/ViewItem.svg" tooltip="アイテムを開く">アイテムを開く</button>
+    <button text="全て選択" id="select_all" image="../images/SelectAll.svg" tooltip="全て選択">全て選択</button>
+  </toolbar>
+</toolbarapplet>

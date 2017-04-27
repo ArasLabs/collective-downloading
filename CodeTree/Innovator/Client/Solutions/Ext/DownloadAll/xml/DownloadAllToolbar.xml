@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<toolbarapplet on_load="onToolbarLoad" on_click="onClickItem" buttonstyle="windows" buttonsize="26,25">
+  <toolbar id="swtoolbar">
+    <button text="Refresh" id="refresh" image="../images/Refresh.svg" tooltip="Refresh" statusmsg="Refresh">Refresh</button>
+    <button text="Open" id="open_row_item" image="../images/ViewItem.svg" tooltip="Open">Open</button>
+    <button text="Select All" id="select_all" image="../images/SelectAll.svg" tooltip="Select All">Select All</button>
+  </toolbar>
+</toolbarapplet>
