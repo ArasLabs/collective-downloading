@@ -47,7 +47,7 @@ Project | Aras
 
 ## Usage
 
-Review the [ReadMe-Collective downloading.pdf](./Documentation/ReadMe-Collective downloading.pdf) for information on using the project. {[English translation](./Documentation/ReadMe-Collective downloading-English.docx)}
+Review the [ReadMe-Collective downloading.pdf](./Documentation/ReadMe-Collective downloading.pdf) for information on using the project. {[English translation](./Documentation/ReadMe-Collective downloading-English.docx)} 
 
 ## Contributing
 
@@ -60,3 +60,7 @@ Review the [ReadMe-Collective downloading.pdf](./Documentation/ReadMe-Collective
 ## Credits
 
 Created by NEOSYSTEM Co., Ltd.
+
+## License
+
+Aras Labs projects are published to Github under the MIT license. See the [LICENSE file]./LICENSE.md) for license rights and limitations.
